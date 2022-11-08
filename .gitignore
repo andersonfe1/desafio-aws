@@ -30,3 +30,6 @@ override.tf.json
 
 # Ignore .pem file
 *.pem
+
+# Ignore plan file
+*-plan
