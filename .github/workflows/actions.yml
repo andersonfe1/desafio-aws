@@ -1,0 +1,24 @@
+name: Teste Action AWS
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    name: Build docker image - ECR
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: BUILD DOCKER IMAGE
+        run: |
+          aws ecr-public get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_ENDPOINT }}
+          docker build -t $APP_NAME .
+          docker tag $APP_NAME:latest ${{ secrets.AWS_ECR_ENDPOINT }}/$APP_NAME:${GITHUB_REF##*/}-${GITHUB_SHA::8}
+      - name: PUBLISH DOCKER IMAGE
+        run: |
+          docker push ${{ secrets.AWS_ECR_ENDPOINT }}/$APP_NAME:${GITHUB_REF##*/}-${GITHUB_SHA::8}
